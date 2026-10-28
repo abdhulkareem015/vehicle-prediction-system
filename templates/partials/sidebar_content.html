@@ -1,0 +1,69 @@
+{# Reusable sidebar content — used by both desktop sidebar and mobile drawer #}
+{% set page = request.path %}
+
+<!-- Brand -->
+<div class="sidebar-brand">
+  <div class="sidebar-brand-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+      <circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/>
+      <path d="M10 17H14M2 9h6l2-5h4l2 5h4"/>
+    </svg>
+  </div>
+  <span class="sidebar-brand-name">VehicleCare</span>
+</div>
+
+<!-- Nav -->
+<nav class="sidebar-nav" aria-label="Site pages">
+
+  <a href="/"
+     class="nav-item {% if page == '/' or page == '/dashboard' %}active{% endif %}"
+     {% if page == '/' or page == '/dashboard' %}aria-current="page"{% endif %}
+     data-nav-link>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Dashboard
+  </a>
+
+  <a href="/predict"
+     class="nav-item {% if page == '/predict' %}active{% endif %}"
+     {% if page == '/predict' %}aria-current="page"{% endif %}
+     data-nav-link>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/>
+      <path d="M10 17H14M2 9h6l2-5h4l2 5h4"/>
+    </svg>
+    Predict Maintenance
+  </a>
+
+  <a href="/performance"
+     class="nav-item {% if page == '/performance' %}active{% endif %}"
+     {% if page == '/performance' %}aria-current="page"{% endif %}
+     data-nav-link>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </svg>
+    Model Performance
+  </a>
+
+</nav>
+
+<!-- Footer / theme toggle -->
+<div class="sidebar-footer">
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" type="button">
+    <!-- Sun icon (shown in light mode) -->
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+    <!-- Moon icon (shown in dark mode) -->
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <span>Theme</span>
+  </button>
+</div>

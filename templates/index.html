@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+        content="Vehicle Maintenance Prediction System — college data science project demonstrating
+                 machine learning predictions using synthetic vehicle data.">
+  <title>Vehicle Maintenance Prediction System</title>
+
+  <!-- Bootstrap 5.3 CSS (CDN) -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+        crossorigin="anonymous">
+
+  <!-- Project styles -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ── Accessible live region for screen reader announcements ───────── -->
+<div id="live-region"
+     role="status"
+     aria-live="polite"
+     aria-atomic="true"
+     class="visually-hidden"></div>
+
+<!-- ================================================================
+     NAVIGATION
+     ================================================================ -->
+<nav class="navbar navbar-expand-md" aria-label="Main navigation">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">
+      <span aria-hidden="true">🔧</span>
+      Vehicle <span class="brand-accent">Maintenance</span> Predictor
+    </a>
+
+    <!-- Hamburger (mobile) -->
+    <button class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#nav-links"
+            aria-controls="nav-links"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Links -->
+    <div class="collapse navbar-collapse" id="nav-links">
+      <ul class="navbar-nav ms-auto gap-md-2">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="/">Prediction</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"
+             href="#model-info-section"
+             onclick="document.getElementById('model-info-panel').classList.add('show')">
+            Model Info
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</nav>
+
+<!-- ================================================================
+     MAIN CONTENT
+     ================================================================ -->
+<main>
+  <div class="container">
+
+    <!-- ── Health/status banner ─────────────────────────────────── -->
+    <div id="health-banner" role="alert" aria-live="assertive"></div>
+
+    <!-- ── Page intro ───────────────────────────────────────────── -->
+    <div class="page-intro mb-4">
+      <h1>Vehicle Maintenance Prediction</h1>
+      <p class="mb-0">
+        Enter your vehicle's details below to receive a model-based estimate of
+        whether maintenance may be needed within the next&nbsp;30&nbsp;days.
+        This system uses a <strong>RandomForestClassifier</strong> trained on
+        <em>synthetic vehicle data</em> — it is intended for educational
+        demonstration only.
+      </p>
+    </div>
+
+    <!-- ── Two-column layout ────────────────────────────────────── -->
+    <div class="row g-4 align-items-start">
+
+      <!-- ── LEFT: prediction form ──────────────────────────────── -->
+      <div class="col-12 col-lg-7">
+        <div class="card">
+
+          <div class="card-header-navy">
+            <span class="header-icon" aria-hidden="true">📋</span>
+            Vehicle Details
+          </div>
+
+          <div class="card-body p-4">
+
+            <!-- Error alert (validation + API errors) -->
+            <div id="error-alert"
+                 class="alert alert-danger mb-3"
+                 role="alert"
+                 aria-live="assertive">
+              <div id="error-body"></div>
+            </div>
+
+            <form id="predict-form" novalidate autocomplete="off">
+
+              <!-- ── Section: Vehicle profile ─────────────────── -->
+              <p class="form-section-label">Vehicle Profile</p>
+              <div class="row g-3 mb-3">
+
+                <!-- Vehicle_Age_Years -->
+                <div class="col-sm-6">
+                  <label for="Vehicle_Age_Years" class="form-label">
+                    Vehicle Age <span class="unit">(years)</span>
+                  </label>
+                  <input type="number"
+                         id="Vehicle_Age_Years"
+                         name="Vehicle_Age_Years"
+                         class="form-control"
+                         min="0.1"
+                         step="0.1"
+                         placeholder="e.g. 6"
+                         aria-describedby="Vehicle_Age_Years-help Vehicle_Age_Years-error"
+                         required>
+                  <div class="form-text" id="Vehicle_Age_Years-help">
+                    Must be greater than zero. Decimals allowed.
+                  </div>
+                  <div class="invalid-feedback" id="Vehicle_Age_Years-error" aria-live="polite"></div>
+                </div>
+
+                <!-- Fuel_Type -->
+                <div class="col-sm-6">
+                  <label for="Fuel_Type" class="form-label">Fuel Type</label>
+                  <select id="Fuel_Type"
+                          name="Fuel_Type"
+                          class="form-select"
+                          aria-describedby="Fuel_Type-error"
+                          required>
+                    <option value="" disabled selected>Select fuel type</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                  </select>
+                  <div class="invalid-feedback" id="Fuel_Type-error" aria-live="polite"></div>
+                </div>
+
+              </div><!-- /row vehicle profile -->
+
+              <!-- ── Section: Odometer & Usage ───────────────── -->
+              <p class="form-section-label">Odometer &amp; Usage</p>
+              <div class="row g-3 mb-3">
+
+                <!-- Odometer_Km -->
+                <div class="col-sm-6">
+                  <label for="Odometer_Km" class="form-label">
+                    Odometer <span class="unit">(km)</span>
+                  </label>
+                  <input type="number"
+                         id="Odometer_Km"
+                         name="Odometer_Km"
+                         class="form-control"
+                         min="0"
+                         step="1"
+                         placeholder="e.g. 90000"
+                         aria-describedby="Odometer_Km-help Odometer_Km-error"
+                         required>
+                  <div class="form-text" id="Odometer_Km-help">
+                    Total distance the vehicle has travelled.
+                  </div>
+                  <div class="invalid-feedback" id="Odometer_Km-error" aria-live="polite"></div>
+                </div>
+
+                <!-- Average_Daily_Km -->
+                <div class="col-sm-6">
+                  <label for="Average_Daily_Km" class="form-label">
+                    Avg. Daily Distance <span class="unit">(km)</span>
+                  </label>
+                  <input type="number"
+                         id="Average_Daily_Km"
+                         name="Average_Daily_Km"
+                         class="form-control"
+                         min="0"
+                         step="0.1"
+                         placeholder="e.g. 45"
+                         aria-describedby="Average_Daily_Km-error"
+                         required>
+                  <div class="invalid-feedback" id="Average_Daily_Km-error" aria-live="polite"></div>
+                </div>
+
+              </div><!-- /row odometer -->
+
+              <!-- ── Section: Service history ─────────────────── -->
+              <p class="form-section-label">Service History</p>
+              <div class="row g-3 mb-3">
+
+                <!-- Days_Since_Last_Service -->
+                <div class="col-sm-6">
+                  <label for="Days_Since_Last_Service" class="form-label">
+                    Days Since Last Service <span class="unit">(days)</span>
+                  </label>
+                  <input type="number"
+                         id="Days_Since_Last_Service"
+                         name="Days_Since_Last_Service"
+                         class="form-control"
+                         min="0"
+                         step="1"
+                         placeholder="e.g. 210"
+                         aria-describedby="Days_Since_Last_Service-help Days_Since_Last_Service-error"
+                         required>
+                  <div class="form-text" id="Days_Since_Last_Service-help">
+                    Whole number. Cannot exceed vehicle age in days.
+                  </div>
+                  <div class="invalid-feedback" id="Days_Since_Last_Service-error" aria-live="polite"></div>
+                </div>
+
+                <!-- Km_Since_Last_Service -->
+                <div class="col-sm-6">
+                  <label for="Km_Since_Last_Service" class="form-label">
+                    Km Since Last Service <span class="unit">(km)</span>
+                  </label>
+                  <input type="number"
+                         id="Km_Since_Last_Service"
+                         name="Km_Since_Last_Service"
+                         class="form-control"
+                         min="0"
+                         step="1"
+                         placeholder="e.g. 9500"
+                         aria-describedby="Km_Since_Last_Service-help Km_Since_Last_Service-error"
+                         required>
+                  <div class="form-text" id="Km_Since_Last_Service-help">
+                    Cannot exceed total odometer reading.
+                  </div>
+                  <div class="invalid-feedback" id="Km_Since_Last_Service-error" aria-live="polite"></div>
+                </div>
+
+                <!-- Previous_Repairs_Count -->
+                <div class="col-sm-6">
+                  <label for="Previous_Repairs_Count" class="form-label">
+                    Previous Repairs Count
+                  </label>
+                  <input type="number"
+                         id="Previous_Repairs_Count"
+                         name="Previous_Repairs_Count"
+                         class="form-control"
+                         min="0"
+                         step="1"
+                         placeholder="e.g. 3"
+                         aria-describedby="Previous_Repairs_Count-help Previous_Repairs_Count-error"
+                         required>
+                  <div class="form-text" id="Previous_Repairs_Count-help">
+                    Whole number, 0 or more.
+                  </div>
+                  <div class="invalid-feedback" id="Previous_Repairs_Count-error" aria-live="polite"></div>
+                </div>
+
+                <!-- Driving_Condition -->
+                <div class="col-sm-6">
+                  <label for="Driving_Condition" class="form-label">
+                    Driving Condition
+                  </label>
+                  <select id="Driving_Condition"
+                          name="Driving_Condition"
+                          class="form-select"
+                          aria-describedby="Driving_Condition-help Driving_Condition-error"
+                          required>
+                    <option value="" disabled selected>Select condition</option>
+                    <option value="City">City</option>
+                    <option value="Highway">Highway</option>
+                    <option value="Mixed">Mixed</option>
+                    <option value="Rough">Rough</option>
+                  </select>
+                  <div class="form-text" id="Driving_Condition-help">
+                    Typical environment the vehicle is driven in.
+                  </div>
+                  <div class="invalid-feedback" id="Driving_Condition-error" aria-live="polite"></div>
+                </div>
+
+              </div><!-- /row service history -->
+
+              <!-- ── Action row ─────────────────────────────── -->
+              <div class="d-flex flex-wrap gap-2 align-items-center action-row mt-4 pt-2 border-top">
+
+                <button type="submit"
+                        id="btn-predict"
+                        class="btn btn-predict"
+                        aria-label="Run maintenance prediction">
+                  <span aria-hidden="true">🔍</span> Predict Maintenance
+                </button>
+
+                <button type="button"
+                        id="btn-example"
+                        class="btn btn-example"
+                        aria-label="Fill form with example vehicle data">
+                  <span aria-hidden="true">📄</span> Load Example
+                </button>
+
+                <button type="button"
+                        id="btn-reset"
+                        class="btn btn-reset"
+                        aria-label="Clear all form fields">
+                  ↺ Reset
+                </button>
+
+              </div>
+
+              <!-- Loading indicator -->
+              <div id="loading-overlay"
+                   class="loading-overlay mt-3"
+                   role="status"
+                   aria-live="polite">
+                <span class="spinner-border spinner-border-sm text-teal"
+                      aria-hidden="true"></span>
+                <span>Running prediction…</span>
+              </div>
+
+            </form><!-- /form -->
+
+          </div><!-- /card-body -->
+        </div><!-- /card -->
+      </div><!-- /col left -->
+
+      <!-- ── RIGHT: result panel ─────────────────────────────────── -->
+      <div class="col-12 col-lg-5">
+        <div class="card h-100">
+
+          <div class="card-header-navy">
+            <span class="header-icon" aria-hidden="true">📊</span>
+            Prediction Result
+          </div>
+
+          <div class="card-body p-4" id="result-panel">
+
+            <!-- Empty state — shown before any prediction -->
+            <div id="result-empty" class="result-empty" aria-label="No prediction yet">
+              <div class="empty-icon" aria-hidden="true">🚗</div>
+              <p>Fill in the vehicle details and press <strong>Predict Maintenance</strong> to see a result.</p>
+            </div>
+
+            <!-- Result content — shown after a successful prediction -->
+            <div id="result-content" aria-live="polite" aria-atomic="true">
+
+              <!-- Outcome badge -->
+              <div id="outcome-box" class="outcome-badge outcome-teal" role="region" aria-label="Prediction outcome">
+                <span id="outcome-icon" class="outcome-icon" aria-hidden="true"></span>
+                <div>
+                  <p id="outcome-title" class="outcome-title"></p>
+                  <p id="outcome-sub"   class="outcome-subtitle"></p>
+                </div>
+              </div>
+
+              <!-- Probability -->
+              <p class="prob-label">Model Estimate — Maintenance Probability</p>
+              <div class="prob-row">
+                <span id="prob-value" class="prob-value" aria-label="Probability value"></span>
+                <div class="prob-bar-track" role="progressbar"
+                     aria-label="Probability bar"
+                     aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                  <div id="prob-bar-fill" class="prob-bar-fill" style="width:0%"></div>
+                </div>
+              </div>
+              <p id="prob-caveat" class="prob-caveat mb-3">
+                This is a model estimate, not a calibrated real-world risk figure.
+              </p>
+
+              <!-- Backend explanation message -->
+              <p id="result-message" class="result-message mb-3"></p>
+
+              <!-- Data notice -->
+              <div class="data-notice-inline">
+                <span aria-hidden="true">ℹ️</span>
+                <span id="result-notice"></span>
+              </div>
+
+            </div><!-- /result-content -->
+
+          </div><!-- /card-body -->
+        </div><!-- /card -->
+      </div><!-- /col right -->
+
+    </div><!-- /row -->
+
+    <!-- ================================================================
+         MODEL INFORMATION (collapsible)
+         ================================================================ -->
+    <section id="model-info-section" class="mt-5" aria-label="Model information">
+
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <h2 class="h6 mb-0 fw-bold text-navy" style="color:var(--c-navy)">
+          About the Model
+        </h2>
+        <button class="model-info-toggle"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#model-info-panel"
+                aria-expanded="false"
+                aria-controls="model-info-panel">
+          <span class="toggle-label">Show details ▾</span>
+        </button>
+      </div>
+
+      <div id="model-info-panel" class="collapse">
+        <div class="card">
+          <div class="card-body p-4">
+
+            <!-- Synthetic data notice — prominently placed -->
+            <div class="synthetic-notice mb-4" role="note">
+              <span aria-hidden="true">⚠️</span>
+              <span>
+                <strong>Synthetic data notice:</strong>
+                This project uses synthetic vehicle data for educational demonstration.
+                Predictions are not a substitute for a vehicle inspection.
+              </span>
+            </div>
+
+            <div class="row g-4">
+
+              <!-- Model details -->
+              <div class="col-md-5">
+                <h3 class="h6 fw-bold mb-3" style="color:var(--c-navy)">Model Details</h3>
+                <dl class="row row-cols-1 g-1 mb-0" style="font-size:.875rem">
+                  <div class="d-flex gap-2">
+                    <dt class="fw-semibold" style="min-width:90px;color:#4a5568">Algorithm</dt>
+                    <dd id="model-name" class="mb-1 text-dark">Loading…</dd>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <dt class="fw-semibold" style="min-width:90px;color:#4a5568">Target</dt>
+                    <dd id="model-target" class="mb-1 text-dark">Loading…</dd>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <dt class="fw-semibold" style="min-width:90px;color:#4a5568">Classes</dt>
+                    <dd class="mb-1 text-dark">
+                      0 = No maintenance predicted<br>
+                      1 = Maintenance predicted
+                    </dd>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <dt class="fw-semibold" style="min-width:90px;color:#4a5568">Split</dt>
+                    <dd class="mb-1 text-dark">80% train / 20% test (stratified)</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <!-- Metrics -->
+              <div class="col-md-7">
+                <h3 class="h6 fw-bold mb-1" style="color:var(--c-navy)">
+                  Evaluation Metrics
+                  <span style="font-weight:400;font-size:.75rem;color:var(--c-muted)">
+                    — held-out synthetic test set
+                  </span>
+                </h3>
+                <p id="model-info-status" style="font-size:.825rem;color:var(--c-muted)">
+                  Loading metrics…
+                </p>
+                <div id="metrics-grid" class="metric-grid"></div>
+              </div>
+
+            </div><!-- /row -->
+
+            <!-- metrics JSON data notice -->
+            <p id="metrics-notice"
+               class="mt-3 mb-0"
+               style="font-size:.78rem;color:var(--c-muted)"></p>
+
+          </div><!-- /card-body -->
+        </div><!-- /card -->
+      </div><!-- /collapse -->
+
+    </section>
+
+  </div><!-- /container -->
+</main>
+
+<!-- ================================================================
+     FOOTER
+     ================================================================ -->
+<footer>
+  <div class="container">
+    <p class="mb-0">
+      Vehicle Maintenance Prediction System &mdash;
+      College Data Science Project &mdash;
+      <span>Synthetic data only &mdash; not for real-world use.</span>
+    </p>
+  </div>
+</footer>
+
+<!-- Bootstrap 5.3 JS bundle (includes Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc4s9bIOgUxi8T/jzmRuN5fCEIBnKkQvCRUK4AxXBRqJ"
+        crossorigin="anonymous"></script>
+
+<!-- Model info toggle label update -->
+<script>
+  (function () {
+    const btn   = document.querySelector('[data-bs-target="#model-info-panel"]');
+    const panel = document.getElementById("model-info-panel");
+    if (!btn || !panel) return;
+    panel.addEventListener("show.bs.collapse",  () => {
+      btn.querySelector(".toggle-label").textContent = "Hide details ▴";
+      btn.setAttribute("aria-expanded", "true");
+    });
+    panel.addEventListener("hide.bs.collapse",  () => {
+      btn.querySelector(".toggle-label").textContent = "Show details ▾";
+      btn.setAttribute("aria-expanded", "false");
+    });
+  })();
+</script>
+
+<!-- Application logic -->
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>

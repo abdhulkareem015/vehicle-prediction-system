@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+
+  <!-- Page header bar -->
+  <div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <a href="/predict" class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/>
+        <path d="M10 17H14M2 9h6l2-5h4l2 5h4"/>
+      </svg>
+      New Prediction
+    </a>
+  </div>
+
+  <div class="page-content">
+    <div class="content-inner">
+
+      <!-- Synthetic data notice -->
+      <div class="synthetic-notice" role="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          <strong>Synthetic data notice:</strong>
+          This project uses synthetic vehicle data for educational demonstration.
+          Predictions are not a substitute for a vehicle inspection.
+        </span>
+      </div>
+
+      <!-- Stats strip: live from /api/health + /api/model-info -->
+      <div class="stats-strip" id="stats-strip" aria-label="System summary">
+        <div class="stat-cell">
+          <p class="stat-label">API Status</p>
+          <p class="stat-value" id="stat-api"><span class="skeleton"></span></p>
+        </div>
+        <div class="stat-cell">
+          <p class="stat-label">Model</p>
+          <p class="stat-value" id="stat-model"><span class="skeleton"></span></p>
+        </div>
+        <div class="stat-cell">
+          <p class="stat-label">Algorithm</p>
+          <p class="stat-value" id="stat-algo" style="font-size:14px;font-weight:500;"><span class="skeleton"></span></p>
+        </div>
+        <div class="stat-cell">
+          <p class="stat-label">Prediction Horizon</p>
+          <p class="stat-value info">30 days</p>
+        </div>
+      </div>
+
+      <!-- Charts area -->
+      <div class="charts-grid" id="charts-area">
+        <!-- Confusion Matrix -->
+        <div class="chart-cell">
+          <p class="chart-title">Confusion Matrix</p>
+          <p class="chart-subtitle">RandomForestClassifier — held-out synthetic test set (n=400)</p>
+          <div id="cm-container">
+            <div class="skeleton" style="height:160px;width:100%;"></div>
+          </div>
+        </div>
+
+        <!-- Metric comparison -->
+        <div class="chart-cell">
+          <p class="chart-title">Model vs Baseline</p>
+          <p class="chart-subtitle">RandomForestClassifier versus DummyClassifier on synthetic data</p>
+          <div id="metric-bars-container">
+            <div class="skeleton" style="height:160px;width:100%;"></div>
+          </div>
+          <div class="legend" id="metric-legend" style="margin-top:12px;display:none;">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:hsl(234,55%,58%)"></div>
+              RandomForestClassifier
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:hsl(0,0%,60%)"></div>
+              DummyClassifier (baseline)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input features table -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <p style="font-size:13px;font-weight:500;">Input Features</p>
+            <p style="font-size:12px;color:var(--color-muted-fg);margin-top:2px;">Eight features used by the prediction model</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" aria-label="Model input features">
+            <thead>
+              <tr>
+                <th>Field name</th>
+                <th>Label</th>
+                <th>Type</th>
+                <th>Unit / accepted values</th>
+                <th>Constraint</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Vehicle_Age_Years</td>
+                <td>Vehicle Age</td>
+                <td><span class="badge badge-info">Number</span></td>
+                <td>Years (decimals OK)</td>
+                <td>Greater than 0</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Fuel_Type</td>
+                <td>Fuel Type</td>
+                <td><span class="badge badge-muted">Category</span></td>
+                <td>Petrol, Diesel</td>
+                <td>Required</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Odometer_Km</td>
+                <td>Odometer</td>
+                <td><span class="badge badge-info">Number</span></td>
+                <td>Kilometres</td>
+                <td>≥ 0</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Average_Daily_Km</td>
+                <td>Avg. Daily Distance</td>
+                <td><span class="badge badge-info">Number</span></td>
+                <td>Kilometres/day</td>
+                <td>≥ 0</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Days_Since_Last_Service</td>
+                <td>Days Since Last Service</td>
+                <td><span class="badge badge-warn">Integer</span></td>
+                <td>Days</td>
+                <td>≥ 0; ≤ age × 365</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Km_Since_Last_Service</td>
+                <td>Km Since Last Service</td>
+                <td><span class="badge badge-info">Number</span></td>
+                <td>Kilometres</td>
+                <td>≥ 0; ≤ odometer</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Previous_Repairs_Count</td>
+                <td>Previous Repairs</td>
+                <td><span class="badge badge-warn">Integer</span></td>
+                <td>Count</td>
+                <td>≥ 0</td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px;">Driving_Condition</td>
+                <td>Driving Condition</td>
+                <td><span class="badge badge-muted">Category</span></td>
+                <td>City, Highway, Mixed, Rough</td>
+                <td>Required</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /content-inner -->
+  </div><!-- /page-content -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

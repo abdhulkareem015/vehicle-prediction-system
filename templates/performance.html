@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Model Performance{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;height:100%;min-height:0;">
+
+  <div class="page-header">
+    <h1 class="page-title">Model Performance</h1>
+    <span id="perf-data-badge" class="badge badge-muted" style="font-size:11px;">Loading…</span>
+  </div>
+
+  <div class="page-content">
+    <div class="content-inner">
+
+      <!-- Synthetic notice -->
+      <div class="synthetic-notice" role="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>
+          All metrics below are evaluated on a <strong>held-out synthetic test set (20%)</strong>.
+          This project uses synthetic vehicle data for educational demonstration.
+          Predictions are not a substitute for a vehicle inspection.
+        </span>
+      </div>
+
+      <!-- RandomForest metric grid -->
+      <div>
+        <p style="font-size:13px;font-weight:500;margin-bottom:4px;">RandomForestClassifier</p>
+        <p style="font-size:12px;color:var(--color-muted-fg);margin-bottom:12px;">Evaluation metrics on the held-out synthetic test split</p>
+        <div class="perf-metrics-grid" id="rf-metrics-grid">
+          <div class="perf-metric-cell"><p class="perf-metric-name">Accuracy</p><p class="perf-metric-val" id="rf-accuracy"><span class="skeleton"></span></p></div>
+          <div class="perf-metric-cell"><p class="perf-metric-name">Precision</p><p class="perf-metric-val" id="rf-precision"><span class="skeleton"></span></p></div>
+          <div class="perf-metric-cell"><p class="perf-metric-name">Recall</p><p class="perf-metric-val" id="rf-recall"><span class="skeleton"></span></p></div>
+          <div class="perf-metric-cell"><p class="perf-metric-name">F1 Score</p><p class="perf-metric-val" id="rf-f1"><span class="skeleton"></span></p></div>
+          <div class="perf-metric-cell"><p class="perf-metric-name">ROC-AUC</p><p class="perf-metric-val" id="rf-auc"><span class="skeleton"></span></p></div>
+        </div>
+      </div>
+
+      <!-- Charts area -->
+      <div class="charts-grid">
+
+        <!-- Confusion matrix -->
+        <div class="chart-cell">
+          <p class="chart-title">Confusion Matrix — RandomForestClassifier</p>
+          <p class="chart-subtitle">Predicted vs actual on held-out synthetic test set</p>
+          <div id="cm-perf" style="min-height:160px;">
+            <div class="skeleton" style="height:160px;width:100%;"></div>
+          </div>
+        </div>
+
+        <!-- Metric comparison bars -->
+        <div class="chart-cell">
+          <p class="chart-title">RandomForest vs DummyClassifier Baseline</p>
+          <p class="chart-subtitle">Higher is better for all metrics below</p>
+          <div id="perf-bars" style="min-height:160px;">
+            <div class="skeleton" style="height:160px;width:100%;"></div>
+          </div>
+          <div class="legend" id="perf-legend" style="margin-top:12px;display:none;">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:hsl(234,55%,58%)"></div>
+              RandomForestClassifier
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:hsl(0,0%,60%)"></div>
+              DummyClassifier (baseline)
+            </div>
+          </div>
+        </div>
+
+        <!-- Baseline comparison table -->
+        <div class="chart-cell full">
+          <p class="chart-title">Full Baseline Comparison</p>
+          <p class="chart-subtitle" id="baseline-subtitle">Comparison of both models on the held-out synthetic test set</p>
+          <div class="table-wrap" id="baseline-table-wrap">
+            <div class="skeleton" style="height:120px;width:100%;"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Split info -->
+      <div id="split-info" style="font-size:12px;color:var(--color-muted-fg);display:none;">
+        Training set: <strong id="split-train">—</strong> samples &nbsp;·&nbsp;
+        Test set: <strong id="split-test">—</strong> samples &nbsp;·&nbsp;
+        Strategy: stratified 80/20, random_state=42
+      </div>
+
+    </div><!-- /content-inner -->
+  </div><!-- /page-content -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/performance.js"></script>
+{% endblock %}

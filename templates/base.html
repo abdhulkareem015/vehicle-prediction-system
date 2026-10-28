@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Vehicle Maintenance Prediction — college data science project using synthetic data.">
+  <title>{% block title %}VehicleCare{% endblock %} — Vehicle Maintenance Prediction</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- Accessible live region -->
+<div id="live-region" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="app-shell">
+
+  <!-- ── Desktop sidebar ──────────────────────────────────── -->
+  <aside class="sidebar" aria-label="Main navigation">
+    {% include "partials/sidebar_content.html" %}
+  </aside>
+
+  <!-- ── Mobile drawer ────────────────────────────────────── -->
+  <div id="drawer-overlay" class="drawer-overlay" aria-hidden="true"></div>
+  <aside id="drawer" class="drawer" aria-label="Mobile navigation" aria-hidden="true">
+    {% include "partials/sidebar_content.html" %}
+  </aside>
+
+  <!-- ── Page wrapper ─────────────────────────────────────── -->
+  <div class="page-wrapper">
+
+    <!-- Mobile header -->
+    <header class="mobile-header">
+      <button id="menu-btn" class="btn-icon" aria-label="Open navigation" aria-expanded="false" aria-controls="drawer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="mobile-brand">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+          <circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/>
+          <path d="M10 17H14M2 9h6l2-5h4l2 5h4"/>
+        </svg>
+        VehicleCare
+      </div>
+      <div style="width:28px"></div>
+    </header>
+
+    {% block content %}{% endblock %}
+
+  </div><!-- /page-wrapper -->
+</div><!-- /app-shell -->
+
+<script src="/static/js/main.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

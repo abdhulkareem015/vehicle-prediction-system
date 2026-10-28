@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Predict Maintenance{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a href="/" class="btn-icon" aria-label="Back to dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </a>
+      <h1 class="page-title">Predict Maintenance</h1>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button id="btn-example" class="btn btn-outline" type="button" aria-label="Load example vehicle data">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Load Example
+      </button>
+      <button id="btn-reset" class="btn btn-ghost" type="button" aria-label="Clear form">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.32"/>
+        </svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Error alert -->
+  <div id="error-alert" class="error-alert" role="alert" aria-live="assertive" style="margin:12px 16px 0;">
+    <div id="error-body"></div>
+  </div>
+
+  <!-- Two-panel layout -->
+  <div class="predict-layout" style="margin:12px;flex:1;">
+
+    <!-- LEFT: form -->
+    <div class="predict-form-panel">
+      <div class="panel-header">
+        <span class="panel-title">Vehicle Details</span>
+        <button type="submit" form="predict-form" id="btn-predict" class="btn btn-primary">
+          <span id="btn-predict-content" style="display:flex;align-items:center;gap:6px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            Predict Maintenance
+          </span>
+        </button>
+      </div>
+
+      <form id="predict-form" novalidate autocomplete="off">
+
+        <!-- Section: Vehicle profile -->
+        <div style="padding:8px 16px 4px;border-bottom:1px solid var(--color-border);">
+          <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-muted-fg);">Vehicle Profile</p>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-section">
+            <label for="Vehicle_Age_Years" class="form-label">
+              Vehicle Age <span style="color:var(--color-muted-fg);font-weight:400;">(years)</span>
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Vehicle_Age_Years" name="Vehicle_Age_Years"
+                   class="form-input" min="0.1" step="0.1" placeholder="e.g. 6"
+                   aria-describedby="Vehicle_Age_Years-help Vehicle_Age_Years-error" required>
+            <p class="form-helper" id="Vehicle_Age_Years-help">Must be greater than zero. Decimals allowed.</p>
+            <p class="form-error" id="Vehicle_Age_Years-error" role="alert"></p>
+          </div>
+          <div class="form-section">
+            <label for="Fuel_Type" class="form-label">
+              Fuel Type <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="Fuel_Type" name="Fuel_Type" class="form-select"
+                    aria-describedby="Fuel_Type-error" required>
+              <option value="" disabled selected>Select…</option>
+              <option value="Petrol">Petrol</option>
+              <option value="Diesel">Diesel</option>
+            </select>
+            <p class="form-error" id="Fuel_Type-error" role="alert"></p>
+          </div>
+        </div>
+
+        <!-- Section: Odometer & usage -->
+        <div style="padding:8px 16px 4px;border-bottom:1px solid var(--color-border);">
+          <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-muted-fg);">Odometer &amp; Usage</p>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-section">
+            <label for="Odometer_Km" class="form-label">
+              Odometer <span style="color:var(--color-muted-fg);font-weight:400;">(km)</span>
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Odometer_Km" name="Odometer_Km"
+                   class="form-input" min="0" step="1" placeholder="e.g. 90000"
+                   aria-describedby="Odometer_Km-help Odometer_Km-error" required>
+            <p class="form-helper" id="Odometer_Km-help">Total distance travelled.</p>
+            <p class="form-error" id="Odometer_Km-error" role="alert"></p>
+          </div>
+          <div class="form-section">
+            <label for="Average_Daily_Km" class="form-label">
+              Avg. Daily Distance <span style="color:var(--color-muted-fg);font-weight:400;">(km/day)</span>
+              <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Average_Daily_Km" name="Average_Daily_Km"
+                   class="form-input" min="0" step="0.1" placeholder="e.g. 45"
+                   aria-describedby="Average_Daily_Km-error" required>
+            <p class="form-error" id="Average_Daily_Km-error" role="alert"></p>
+          </div>
+        </div>
+
+        <!-- Section: Service history -->
+        <div style="padding:8px 16px 4px;border-bottom:1px solid var(--color-border);">
+          <p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-muted-fg);">Service History</p>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-section">
+            <label for="Days_Since_Last_Service" class="form-label">
+              Days Since Last Service <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Days_Since_Last_Service" name="Days_Since_Last_Service"
+                   class="form-input" min="0" step="1" placeholder="e.g. 210"
+                   aria-describedby="Days_Since_Last_Service-help Days_Since_Last_Service-error" required>
+            <p class="form-helper" id="Days_Since_Last_Service-help">Whole number. Cannot exceed vehicle age in days.</p>
+            <p class="form-error" id="Days_Since_Last_Service-error" role="alert"></p>
+          </div>
+          <div class="form-section">
+            <label for="Km_Since_Last_Service" class="form-label">
+              Km Since Last Service <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Km_Since_Last_Service" name="Km_Since_Last_Service"
+                   class="form-input" min="0" step="1" placeholder="e.g. 9500"
+                   aria-describedby="Km_Since_Last_Service-help Km_Since_Last_Service-error" required>
+            <p class="form-helper" id="Km_Since_Last_Service-help">Cannot exceed total odometer reading.</p>
+            <p class="form-error" id="Km_Since_Last_Service-error" role="alert"></p>
+          </div>
+          <div class="form-section">
+            <label for="Previous_Repairs_Count" class="form-label">
+              Previous Repairs Count <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="number" id="Previous_Repairs_Count" name="Previous_Repairs_Count"
+                   class="form-input" min="0" step="1" placeholder="e.g. 3"
+                   aria-describedby="Previous_Repairs_Count-help Previous_Repairs_Count-error" required>
+            <p class="form-helper" id="Previous_Repairs_Count-help">Whole number, 0 or more.</p>
+            <p class="form-error" id="Previous_Repairs_Count-error" role="alert"></p>
+          </div>
+          <div class="form-section">
+            <label for="Driving_Condition" class="form-label">
+              Driving Condition <span class="required" aria-hidden="true">*</span>
+            </label>
+            <select id="Driving_Condition" name="Driving_Condition" class="form-select"
+                    aria-describedby="Driving_Condition-help Driving_Condition-error" required>
+              <option value="" disabled selected>Select…</option>
+              <option value="City">City</option>
+              <option value="Highway">Highway</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Rough">Rough</option>
+            </select>
+            <p class="form-helper" id="Driving_Condition-help">Typical environment the vehicle is driven in.</p>
+            <p class="form-error" id="Driving_Condition-error" role="alert"></p>
+          </div>
+        </div>
+
+        <!-- Loading indicator (below form) -->
+        <div id="loading-row" style="display:none;padding:12px 16px;align-items:center;gap:8px;font-size:12px;color:var(--color-muted-fg);">
+          <div class="spinner" aria-hidden="true"></div>
+          Running prediction…
+        </div>
+
+      </form>
+    </div><!-- /form panel -->
+
+    <!-- RIGHT: result panel -->
+    <div class="predict-result-panel">
+      <div class="panel-header">
+        <span class="panel-title">Prediction Result</span>
+        <div id="result-status-badge"></div>
+      </div>
+
+      <!-- Stale banner (inputs changed after prediction) -->
+      <div id="stale-banner" class="stale-banner" role="status" style="margin:10px 16px 0;">
+        ⚠ Inputs changed — result shown is for previous submission.
+      </div>
+
+      <!-- Empty state -->
+      <div id="result-empty" class="result-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="5" cy="18" r="3"/><circle cx="19" cy="18" r="3"/>
+          <path d="M10 17H14M2 9h6l2-5h4l2 5h4"/>
+        </svg>
+        <p>Fill in the vehicle details and press <strong>Predict Maintenance</strong> to see a result.</p>
+      </div>
+
+      <!-- Result content -->
+      <div id="result-content" style="display:none;" aria-live="polite" aria-atomic="true">
+        <div class="result-body">
+
+          <!-- Outcome badge -->
+          <div id="outcome-badge" class="outcome-badge">
+            <svg id="outcome-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"></svg>
+            <div>
+              <p id="outcome-title" class="outcome-badge-title"></p>
+              <p id="outcome-sub" class="outcome-badge-sub"></p>
+            </div>
+          </div>
+
+          <!-- Probability -->
+          <div class="prob-section">
+            <div class="prob-header">
+              <span class="prob-label">Model estimate — probability</span>
+              <span id="prob-pct" class="prob-pct"></span>
+            </div>
+            <div class="prob-track" role="progressbar" aria-label="Probability" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="prob-fill" class="prob-fill" style="width:0%"></div>
+            </div>
+            <p class="prob-caveat">This is a model estimate, not a calibrated real-world risk figure.</p>
+          </div>
+
+          <!-- Backend message -->
+          <p id="result-message" class="result-message"></p>
+
+          <!-- Vehicle summary -->
+          <div id="vehicle-summary" class="vehicle-summary">
+            <p class="vehicle-summary-title">Submitted vehicle details</p>
+            <div id="vehicle-summary-grid" class="vehicle-summary-grid"></div>
+          </div>
+
+          <!-- Data notice -->
+          <p id="data-notice" style="font-size:11px;color:var(--color-muted-fg);line-height:1.5;"></p>
+
+        </div>
+      </div><!-- /result-content -->
+    </div><!-- /result panel -->
+
+  </div><!-- /predict-layout -->
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/predict.js"></script>
+{% endblock %}
